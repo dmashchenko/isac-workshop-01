@@ -1,0 +1,53 @@
+@startuml
+skinparam ParticipantPadding 20
+skinparam ParticipantFontSize 20
+skinparam QueueFontSize 20
+skinparam BoxPadding 30
+
+actor       Client as client
+participant "App" as app
+box "Bank"
+participant "Digital" as digital
+queue "Kafka" as kafka
+participant "Core" as core
+end box
+
+group active loan accounts mirror
+core -> kafka: publish accounts
+digital -> kafka: pull data
+digital -> digital: store
+end
+
+group payment
+client -> core: payment
+core -> kafka: {\n client_id,\n loand_id,\n payment:{}, \n payment_schedule:{},\n loan_details:{}\n}
+digital -> kafka: pull
+digital -> digital: store
+end
+
+group overdue loop
+core -> core: overdue ?
+core -> kafka: {\n client_id,\n loand_id,\n payment:{}, \n payment_schedule:{},\n loan_details:{}\n}
+digital -> kafka: pull
+digital -> digital: store
+end
+
+group home page
+client -> app: logged in
+app -> digital: sync
+app -> app: store
+client <- app: show loans view
+end
+
+group notification loop [each day]
+app -> app: notify ?
+client <- app: show notification
+end
+
+group overdue notification loop [each day]
+app -> app: (payment day + 1 day) ?
+app -> digital: get updates if overdue
+app -> client: notify if overdue
+end
+
+@enduml

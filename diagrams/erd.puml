@@ -1,0 +1,49 @@
+@startuml
+skinparam linetype ortho
+skinparam roundcorner 10
+skinparam classFontSize 15
+
+
+entity "Loan" as loan {
+    loan_id
+    date
+    term
+    currency
+}
+
+entity "LoanDetails" as loan_details {
+    loan_details_id
+    pschedule_id
+    total_amount
+    interest_rate
+}
+entity "Client" as client {
+    client_id
+    client_bank_id
+    phone_number
+    email
+    RNTRC
+}
+entity "Payment" as payment {
+    date
+    amount
+}
+entity "PaymentSchedule" as pschedule {
+    pschedule_id
+    loan_id
+    date
+    active
+}
+entity "PaymentInvoice" as invoice {
+    schedule_item_id
+    amount
+    due_date
+}
+
+loan ||--|{ pschedule
+loan }|--|| client
+loan ||--o{ payment
+pschedule }|--|| loan_details
+pschedule ||--|{ invoice
+
+@enduml

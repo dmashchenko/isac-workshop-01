@@ -1,49 +1,65 @@
 @startuml
+skinparam dpi 300
 skinparam linetype ortho
+skinparam ParticipantPadding 50
 skinparam roundcorner 10
 skinparam classFontSize 15
 
 
 entity "Loan" as loan {
     loan_id
-    date
-    term
+    account_id
+    contract_number
+    start_date
+    end_date
+    body_amount
     currency
+    status
+    IBAN
 }
 
-entity "LoanDetails" as loan_details {
-    loan_details_id
-    pschedule_id
-    total_amount
-    interest_rate
-}
 entity "Client" as client {
     client_id
-    client_bank_id
+    account_id
     phone_number
     email
-    RNTRC
-}
-entity "Payment" as payment {
-    date
-    amount
-}
-entity "PaymentSchedule" as pschedule {
-    pschedule_id
-    loan_id
-    date
-    active
-}
-entity "PaymentInvoice" as invoice {
-    schedule_item_id
-    amount
-    due_date
+    first_name
+    last_name
+    RNTC
 }
 
-loan ||--|{ pschedule
-loan }|--|| client
-loan ||--o{ payment
-pschedule }|--|| loan_details
-pschedule ||--|{ invoice
+entity "Account" as account{
+    account_id
+    client_id
+    IBAN
+}
+
+entity "Transaction" as transaction{
+    transaction_id
+    account_id
+    transaction_type
+    status
+    date
+    amount
+    currency
+    IBAN
+}
+
+entity "PaymentInvoice" as invoice {
+    payment_invoice_id
+    loan_id
+    body_amount
+    fee
+    penalty
+    currency
+    due_date
+    status
+}
+
+client ||-o{ account
+account ||-o{ transaction
+loan }o--|| account
+loan ||-o{ invoice
+
 
 @enduml

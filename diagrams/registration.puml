@@ -1,0 +1,31 @@
+@startuml
+skinparam ParticipantPadding 20
+skinparam ParticipantFontSize 20
+skinparam QueueFontSize 20
+skinparam BoxPadding 30
+
+actor       Client as client
+participant "App" as app
+box "Bank"
+participant "Digital" as digital
+queue "Kafka" as kafka
+participant "Core" as core
+end box
+
+
+group registration :todo
+client -> app: registration (init by phoneNumber)
+app -> digital: /client/registration/init \n {\n phoneNumber\n}
+activate app
+digital -> kafka: TOPIC: [MultiFactor] {phoneNumber: 'xxxx', processType: DIGITAL_REGISTRATION}
+digital -> app: OK
+deactivate app
+
+core -> kafka
+end
+group userinfo stream: core -> digital
+core -> kafka: publish client_info \n {\n client_id,\n loand_id,\n payment:{}, \n payment_schedule:{},\n loan_details:{}\n}
+digital -> kafka: pull data
+digital -> digital: store
+end
+@enduml

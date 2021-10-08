@@ -1,0 +1,55 @@
+@startuml
+skinparam dpi 200
+
+cloud "Store" {
+    [MobileApp]
+}
+
+cloud "Digital Cloud" as dcloud{
+    node "DEV" {
+        [REST API]
+        [AuthService]
+        [ETLService]
+        [NotificationService]
+        queue Kafka
+        database SqlDB as dev_db
+        database "Prod-Sec-Data-For-Dev" as dev_prod_storage
+    }
+}
+
+frame "Core On-Premise" as asd {
+    folder "Digital" as dd {
+        node "PROD" {
+            [REST API ]
+            [AuthService ]
+            [ETLService ]
+            [NotificationService ]
+            database "SqlDB " as prod_db
+            component Obfuscator
+        }
+        node "STAGE"{
+             [REST API  ]
+             [AuthService  ]
+             [ETLService  ]
+             [NotificationService  ]
+             database "SqlDB  "
+        }
+    }
+    folder Core as cc {
+        node "PROD " as core_prod {
+            [Core System]
+            [Kafka ]
+        }
+        node "Sandbox" as  core_sandbox{
+                    [Core System Sanbox]
+                    [Kafka Sanbox]
+        }
+    }
+}
+
+Obfuscator --> dev_prod_storage
+prod_db --> Obfuscator
+core_prod -[hidden]- core_sandbox
+Store -[hidden]- dcloud
+
+@enduml

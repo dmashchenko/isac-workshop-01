@@ -1,0 +1,165 @@
+asyncapi: 2.2.0
+info:
+  title: "Stereo Bank - Core Kafka API"
+  version: 1.0.0
+  description: "Stereo Bank - Core"
+  contact:
+    name: Dima Mashchenko
+    email: mashchenkod@gmail.com
+defaultContentType: avro
+channels:
+  'core/clients':
+    publish:
+      message:
+        $ref: '#/components/messages/client'
+  'core/accounts/loans':
+    publish:
+      message:
+        $ref: '#/components/messages/loan'
+components:
+  messages:
+    client:
+      name: client
+      summary: client info
+      contentType: application/vnd.apache.avro;version=1.9.0
+      payload:
+        $ref: '#/components/schemas/clientPayload'
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+    loan:
+      name: client loan
+      contentType: application/vnd.apache.avro;version=1.9.0
+      payload:
+        $ref: '#/components/schemas/loanPayload'
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+  schemas:
+    clientPayload:
+      type: object
+      properties:
+        client:
+          $ref: '#/components/schemas/client'
+    loanPayload:
+      type: object
+      properties:
+        loan:
+          $ref: '#/components/schemas/loan'
+    client:
+      type: object
+      properties:
+        id:
+          type: integer
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        rntc:
+          type: integer
+    account:
+      type: object
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        iban:
+          type: string
+    loan:
+      type: object
+      properties:
+        id:
+          type: integer
+        account_id:
+          type: integer
+        contract_number:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        body_amount:
+          $ref: '#/components/schemas/money'
+        status:
+          type: string
+          enum:
+            - active
+            - closed
+        iban:
+          type: string
+    payment_invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        loan_id:
+          type: integer
+        due_date:
+          type: string
+          format: date-time
+        body_amount:
+          $ref: '#/components/schemas/money'
+        fee:
+          $ref: '#/components/schemas/money'
+        penalty:
+          $ref: '#/components/schemas/money'
+        status:
+          type: string
+          enum:
+            - payed
+            - overdue
+    transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        account_id:
+          type: integer
+        transaction_type:
+          type: string
+          enum:
+            - loan_payment
+        date:
+          type: string
+          format: date-time
+        amount:
+          $ref: '#/components/schemas/money'
+        status:
+          type: string
+          enum:
+            - pending
+            - canceled
+            - completed
+        iban:
+          type: string
+    money:
+      type: object
+      properties:
+        currency:
+          type: string
+          enum:
+            - EUR
+            - US
+            - UAH
+        amount:
+          type: integer
+  messageTraits:
+    commonHeaders:
+      headers:
+        type: object
+        properties:
+          method:
+            type: string
+            enum:
+              - CREATE
+              - UPDATE
+          sent_at:
+            type: string
+            format: date-time
+            description: Date and time when the message was sent.

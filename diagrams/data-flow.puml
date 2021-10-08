@@ -1,0 +1,36 @@
+@startuml
+skinparam dpi 300
+frame Core {
+    component CoreSystem
+    queue Kafka
+}
+
+frame Digital{
+    database SqlDB
+    component ETLService
+    component NotificationService
+    component "REST API" as restapi
+    component AuthService
+    component MobileApp
+}
+
+actor Client
+
+cloud NotificationProvider {
+
+}
+
+
+CoreSystem -left-> Kafka
+
+Kafka -left-> ETLService
+ETLService -down-> SqlDB
+NotificationService -left-> NotificationProvider
+SqlDB <-left-> restapi
+SqlDB <-up-> NotificationService
+AuthService <-up-> SqlDB
+AuthService <-left-> restapi
+restapi <-left-> MobileApp
+NotificationProvider --> MobileApp
+MobileApp <-left-> Client
+@enduml

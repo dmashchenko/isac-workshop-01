@@ -1,0 +1,310 @@
+openapi: 3.1.0
+info:
+  title: digital
+  version: '1.0'
+  summary: 'Stereo Bank: Digital REST API'
+  contact:
+    email: mashchenkod@gmail.com
+  description: description
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/clients/{client-id}':
+    get:
+      summary: ''
+      operationId: get-client
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/Errors'
+        '500':
+          $ref: '#/components/responses/Errors'
+      parameters: []
+      description: ''
+    parameters:
+      - $ref: '#/components/parameters/client-id'
+  '/accounts/{account-id}/loans':
+    parameters:
+      - $ref: '#/components/parameters/account-id'
+    get:
+      summary: Your GET endpoint
+      tags: []
+      operationId: get-clients-client-id-loans
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - active
+              - closed
+          in: query
+          name: status
+          description: 'Loan status, get all loans if empty'
+        - $ref: '#/components/parameters/before'
+        - $ref: '#/components/parameters/after'
+        - $ref: '#/components/parameters/size'
+      responses:
+        '200':
+          $ref: '#/components/responses/Loans'
+      description: ''
+  '/accounts/{account-id}/loans/{loan-id}':
+    parameters:
+      - name: loan-id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: account-id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get Loan Info
+      tags: []
+      operationId: get-users-userId
+      description: Retrieve the information of the user with the matching user ID.
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+  '/accounts/{account-id}/loans/{loan-id}/payment-schedule':
+    parameters:
+      - $ref: '#/components/parameters/loan-id'
+      - $ref: '#/components/parameters/account-id'
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Schedule'
+      operationId: get-loans-client-id-payment-invoice
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+  '/accounts/{account-id}/transactions':
+    parameters:
+      - $ref: '#/components/parameters/account-id'
+    get:
+      summary: Get Loan Info
+      tags: []
+      operationId: get-accounts-accountId-loans-loanId-transactions
+      description: Retrieve the information of the user with the matching user ID.
+      parameters:
+        - $ref: '#/components/parameters/before'
+        - $ref: '#/components/parameters/after'
+        - $ref: '#/components/parameters/size'
+      responses:
+        '200':
+          $ref: '#/components/responses/Transactions'
+components:
+  schemas:
+    Client:
+      title: Client
+      type: object
+      description: ''
+      properties:
+        id:
+          type: integer
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        rntc:
+          type: integer
+      required:
+        - id
+        - first_name
+        - last_name
+        - phone_number
+    Loan:
+      title: Loan
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        status:
+          enum:
+            - active
+            - closed
+          type: string
+        IBAN:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+    Money:
+      title: Money
+      type: object
+      properties:
+        amount:
+          type: integer
+        currency:
+          type: string
+          enum:
+            - UAH
+            - UER
+            - USD
+    PaymentInvoice:
+      title: PaymentInvoice
+      type: object
+      properties:
+        id:
+          type: integer
+        loan_id:
+          type: integer
+        due_date:
+          type: string
+          format: date-time
+        body_amount:
+          $ref: '#/components/schemas/Money'
+        fee:
+          $ref: '#/components/schemas/Money'
+        penalty:
+          $ref: '#/components/schemas/Money'
+        status:
+          type: string
+          enum:
+            - payed
+            - overdue
+    Transaction:
+      title: Transaction
+      type: object
+      properties:
+        id:
+          type: integer
+        account_id:
+          type: integer
+        transaction_type:
+          type: string
+          enum:
+            - loan_payment
+        date:
+          type: string
+          format: date-time
+        amount:
+          $ref: '#/components/schemas/Money'
+        status:
+          type: string
+          enum:
+            - pending
+            - canceled
+            - completed
+        iban:
+          type: string
+    Error:
+      title: Error
+      type: object
+      properties:
+        source:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+    Account:
+      title: Account
+      properties:
+        id:
+          type: integer
+        client_id:
+          type: integer
+        iban:
+          type: string
+  parameters:
+    client-id:
+      name: client-id
+      in: path
+      required: true
+      schema:
+        type: integer
+    loan-id:
+      name: loan-id
+      in: path
+      required: true
+      schema:
+        type: integer
+    before:
+      name: before
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Pagination cursor
+    after:
+      name: after
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Pagination cursor
+    size:
+      name: page-size
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Page size
+    account-id:
+      name: account-id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    Schedule:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PaymentInvoice'
+    Transactions:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Transaction'
+    Loans:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Loan'
+    Errors:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
